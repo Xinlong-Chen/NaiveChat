@@ -5,6 +5,9 @@
 
 #include "json/json.hpp"
 
+#include "common/Handler.h"
+#include "dispatcher/Dispatcher.h"
+
 using json = nlohmann::json;
 
 ChatServer::ChatServer(muduo::net::EventLoop *loop,
@@ -40,7 +43,9 @@ void ChatServer::onMessage(const muduo::net::TcpConnectionPtr & conn,
                            muduo::Timestamp timestamp) {
     // TODO Add some application layer protocol
     std::string buf = buffer->retrieveAllAsString();
-    std::cout << buf << std::endl;
-    // json js = json::parse(buf);
+    // std::cout << buf << std::endl;
+    json js = json::parse(buf);
 
+    MsgHandler handler = Dispatcher::instance()->getHandler(js["msgid"].get<int>());
+    handler(conn, js, timestamp);
 }
