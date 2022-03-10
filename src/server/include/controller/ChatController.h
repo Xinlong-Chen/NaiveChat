@@ -5,11 +5,24 @@
 
 #include <iostream>
 
+#include "model/User.h"
+#include "dao/UserDAO.h"
+
 class ChatController {
 public:
     void test(const muduo::net::TcpConnectionPtr &conn, 
                         json &js, muduo::Timestamp timestamp) {
-        std::cout << "test" << std::endl;
+        User user;
+        std::string name;
+        try {
+            name = js["name"];
+        } catch(...) {
+            return;
+        }
+        user.setName(name);
+
+        UserDAO dao;
+        dao.insert(user);
     }
 };
 

@@ -44,7 +44,13 @@ void ChatServer::onMessage(const muduo::net::TcpConnectionPtr & conn,
     // TODO Add some application layer protocol
     std::string buf = buffer->retrieveAllAsString();
     // std::cout << buf << std::endl;
-    json js = json::parse(buf);
+    json js;
+    try {
+        js = json::parse(buf);
+    } catch(...) {
+        return;
+    }
+
 
     MsgHandler handler = Dispatcher::instance()->getHandler(js["msgid"].get<int>());
     handler(conn, js, timestamp);
