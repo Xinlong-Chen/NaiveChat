@@ -10,7 +10,7 @@
  */
 HandlerMapping::HandlerMapping() {
     controllerMap_.insert({
-        LOGIN_MSG, std::bind(&UserController::test, &UserController::get_instance(), std::placeholders::_1, 
+        LOGIN_MSG, std::bind(&UserController::registerUser, &UserController::get_instance(), std::placeholders::_1, 
                                 std::placeholders::_2, std::placeholders::_3)
     });
 }

@@ -6,28 +6,18 @@
 #include <iostream>
 
 #include "common/Singleton.h"
-#include "model/User.h"
-#include "dao/UserDAO.h"
+#include "service/UserService.h"
 
 class UserController : public Singleton<UserController> {
 public:
-    void test(const muduo::net::TcpConnectionPtr &conn, 
-                        json &js, muduo::Timestamp timestamp) {
-        User user;
-        std::string name;
-        try {
-            name = js["name"];
-        } catch(...) {
-            return;
-        }
-        user.setName(name);
-
-        UserDAO dao;
-        dao.insert(user);
-    }
+    void registerUser(const muduo::net::TcpConnectionPtr &conn, 
+                            json &js, muduo::Timestamp timestamp);
     
 protected:
     UserController() {}
+
+private:
+    UserService userService_;
 };
 
 #endif

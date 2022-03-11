@@ -15,4 +15,10 @@ enum EnMsgType
     GROUP_CHAT_MSG,
 };
 
+#define FIX_JSON_PACKAGE(resp, msg_type, errno) \
+    {                                           \
+        resp["msgid"] = msg_type;               \
+        resp["errno"] = errno;                  \
+    }                                           \
+
 #endif
