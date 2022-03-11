@@ -5,10 +5,11 @@
 
 #include <iostream>
 
+#include "common/Singleton.h"
 #include "model/User.h"
 #include "dao/UserDAO.h"
 
-class ChatController {
+class UserController : public Singleton<UserController> {
 public:
     void test(const muduo::net::TcpConnectionPtr &conn, 
                         json &js, muduo::Timestamp timestamp) {
@@ -24,6 +25,9 @@ public:
         UserDAO dao;
         dao.insert(user);
     }
+    
+protected:
+    UserController() {}
 };
 
 #endif

@@ -3,19 +3,15 @@
 
 #include <functional>
 
+#include "common/Singleton.h"
 #include "dispatcher/HandlerMapping.h"
 
-class Dispatcher {
+class Dispatcher : public Singleton<Dispatcher> {
 public:
-    static Dispatcher* instance() {
-        static Dispatcher dispatcher;
-        return &dispatcher;
-    }
-
     MsgHandler getHandler(int msgid) {
-        return HandlerMapping::instance()->getHandler(msgid);
+        return HandlerMapping::get_instance().getHandler(msgid);
     }
-private:
+protected:
     Dispatcher() = default;
 };
 

@@ -6,17 +6,11 @@
 
 #include <muduo/base/Logging.h>
 
+#include "common/Singleton.h"
 #include "common/Handler.h"
 
-class HandlerMapping {
-private:
-    std::unordered_map<int, MsgHandler> controllerMap_;
-    HandlerMapping();
+class HandlerMapping : public Singleton<HandlerMapping> {
 public:
-    static HandlerMapping* instance() {
-        static HandlerMapping handler_mapping;
-        return &handler_mapping;
-    }
     ~HandlerMapping() = default;
 
     MsgHandler getHandler(int msgid) {
@@ -29,6 +23,11 @@ public:
         return iter->second;
     }
 
+protected:
+    HandlerMapping();
+
+private:
+    std::unordered_map<int, MsgHandler> controllerMap_;
 };
 
 

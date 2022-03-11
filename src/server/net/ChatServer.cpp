@@ -52,6 +52,6 @@ void ChatServer::onMessage(const muduo::net::TcpConnectionPtr & conn,
     }
 
 
-    MsgHandler handler = Dispatcher::instance()->getHandler(js["msgid"].get<int>());
+    MsgHandler handler = Dispatcher::get_instance().getHandler(js["msgid"].get<int>());
     handler(conn, js, timestamp);
 }
