@@ -10,7 +10,9 @@ public:
     ~UserService() = default;
 
     int registerUser(const std::string& name, const std::string& password);
-
+    int login(const int id, const std::string& password);
+    int logout(const int id);
+    
 private:
     UserDAO userDAO;
 };

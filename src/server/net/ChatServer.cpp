@@ -5,6 +5,7 @@
 
 #include "json/json.hpp"
 
+#include "public.h"
 #include "common/Handler.h"
 #include "dispatcher/Dispatcher.h"
 
@@ -33,6 +34,9 @@ void ChatServer::start() {
 void ChatServer::onConnection(const muduo::net::TcpConnectionPtr &conn) {
     // client close TCP connection
     if (!conn->connected()) {
+        json request;
+        MsgHandler handler = Dispatcher::get_instance().getHandler(CLIENT_EXCEPTION);
+        handler(conn, request, muduo::Timestamp(muduo::Timestamp::now()));
         conn->shutdown();
     }
 
@@ -44,14 +48,24 @@ void ChatServer::onMessage(const muduo::net::TcpConnectionPtr & conn,
     // TODO Add some application layer protocol
     std::string buf = buffer->retrieveAllAsString();
     // std::cout << buf << std::endl;
-    json js;
+    json request, response;
     try {
-        js = json::parse(buf);
+        request = json::parse(buf);
     } catch(...) {
+        FIX_JSON_PACKAGE(response, ERROR_MESSAGE, 1);
+        conn->send(response.dump());
         return;
     }
 
+    int msgid = -1;
+    try {
+        msgid = request["msgid"].get<int>();
+    } catch(...) {
+        FIX_JSON_PACKAGE(response, ERROR_MESSAGE, 2);
+        conn->send(response.dump());
+        return;
+    }
 
-    MsgHandler handler = Dispatcher::get_instance().getHandler(js["msgid"].get<int>());
-    handler(conn, js, timestamp);
+    MsgHandler handler = Dispatcher::get_instance().getHandler(msgid);
+    handler(conn, request, timestamp);
 }
