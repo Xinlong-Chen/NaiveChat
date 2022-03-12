@@ -24,9 +24,14 @@ HandlerMapping::HandlerMapping() {
         LOGOUT_MSG, std::bind(&UserController::logout, &UserController::get_instance(), std::placeholders::_1, 
                                 std::placeholders::_2, std::placeholders::_3)
     });
+}
 
-    controllerMap_.insert({
-        CLIENT_EXCEPTION, std::bind(&UserController::clientCloseException, &UserController::get_instance(), 
-                                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
-    });
+
+std::function<void()> HandlerMapping::getServerExecptionHandle() {
+    return std::bind(&UserController::serverReset, &UserController::get_instance());
+}
+
+std::function<void(const muduo::net::TcpConnectionPtr &conn)> HandlerMapping::getClientExecptionHandle() {
+    return std::bind(&UserController::clientCloseException, &UserController::get_instance(),
+                        std::placeholders::_1);
 }

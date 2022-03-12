@@ -8,6 +8,8 @@
 
 using namespace std;
 
+extern void resetHandler(int);
+
 int main(int argc, char **argv)
 {
     if (argc < 3)
@@ -20,6 +22,7 @@ int main(int argc, char **argv)
     char *ip = argv[1];
     uint16_t port = atoi(argv[2]);
 
+    signal(SIGINT, resetHandler);
 
     muduo::net::EventLoop loop;
     muduo::net::InetAddress addr(ip, port);

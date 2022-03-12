@@ -20,9 +20,10 @@ public:
     void logout(const muduo::net::TcpConnectionPtr &conn, 
                             json &js, muduo::Timestamp timestamp);
 
-    void clientCloseException(const muduo::net::TcpConnectionPtr &conn, 
-                            json &js, muduo::Timestamp timestamp);
-                            
+    void clientCloseException(const muduo::net::TcpConnectionPtr &conn);
+
+    void serverReset();
+             
 protected:
     UserController() {}
 

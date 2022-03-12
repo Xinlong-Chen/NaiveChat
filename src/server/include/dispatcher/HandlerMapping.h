@@ -22,6 +22,9 @@ public:
         }
         return iter->second;
     }
+    
+    std::function<void()> getServerExecptionHandle();
+    std::function<void(const muduo::net::TcpConnectionPtr &conn)> getClientExecptionHandle();
 
 protected:
     HandlerMapping();

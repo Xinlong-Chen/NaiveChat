@@ -30,3 +30,9 @@ int UserService::logout(const int id) {
     User user(id, "", "", "offline");
     return userDAO.updateState(user) == true ? 0 : -1;
 }
+
+
+int UserService::resetState() {
+    userDAO.resetState();
+    return 0;
+}

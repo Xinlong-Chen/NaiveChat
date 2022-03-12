@@ -102,8 +102,7 @@ void UserController::logout(const muduo::net::TcpConnectionPtr &conn,
 
 }
 
-void UserController::clientCloseException(const muduo::net::TcpConnectionPtr &conn, 
-                        json &js, muduo::Timestamp timestamp) {
+void UserController::clientCloseException(const muduo::net::TcpConnectionPtr &conn) {
     int id = -1;
     {
         std::lock_guard<std::mutex> lock(connMutex_);
@@ -121,4 +120,8 @@ void UserController::clientCloseException(const muduo::net::TcpConnectionPtr &co
     if (id != -1) {
         userService_.logout(id);
     }
+}
+
+void UserController::serverReset() {
+    userService_.resetState();
 }

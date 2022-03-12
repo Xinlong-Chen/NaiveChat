@@ -11,6 +11,12 @@
 
 using json = nlohmann::json;
 
+void resetHandler(int) {
+    auto handler = Dispatcher::get_instance().getServerExecptionHandle();
+    handler();
+    exit(0);
+}
+
 ChatServer::ChatServer(muduo::net::EventLoop *loop,
                        const muduo::net::InetAddress &listenAddr,
                        const std::string &nameArg)
@@ -34,9 +40,8 @@ void ChatServer::start() {
 void ChatServer::onConnection(const muduo::net::TcpConnectionPtr &conn) {
     // client close TCP connection
     if (!conn->connected()) {
-        json request;
-        MsgHandler handler = Dispatcher::get_instance().getHandler(CLIENT_EXCEPTION);
-        handler(conn, request, muduo::Timestamp(muduo::Timestamp::now()));
+        auto handler = Dispatcher::get_instance().getClientExecptionHandle();
+        handler(conn);
         conn->shutdown();
     }
 
