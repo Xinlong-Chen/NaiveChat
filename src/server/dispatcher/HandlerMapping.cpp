@@ -24,6 +24,11 @@ HandlerMapping::HandlerMapping() {
         LOGOUT_MSG, std::bind(&UserController::logout, &UserController::get_instance(), std::placeholders::_1, 
                                 std::placeholders::_2, std::placeholders::_3)
     });
+
+    controllerMap_.insert({
+        ONE_CHAT_MSG, std::bind(&UserController::oneChat, &UserController::get_instance(), std::placeholders::_1, 
+                                std::placeholders::_2, std::placeholders::_3)
+    });
 }
 
 

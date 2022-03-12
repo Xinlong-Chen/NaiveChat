@@ -65,8 +65,24 @@ void UserController::login(const muduo::net::TcpConnectionPtr &conn,
         userConnMap_.insert({id, conn});
     }
     FIX_JSON_PACKAGE(response, LOGIN_MSG_ACK, 0);
+
+    // load offline msgs
+    std::vector<std::string> offlineMsgs;
+    loadOfflineMsg(id, offlineMsgs);
+    
+    if (!offlineMsgs.empty()) {
+        response["offlinemsg"] = offlineMsgs;
+    }
+
+
     conn->send(response.dump());
 
+}
+
+
+int UserController::loadOfflineMsg(int id, std::vector<std::string>& ans) {
+    ans = msgService_.query_and_remove(id);
+    return 0;
 }
 
 void UserController::logout(const muduo::net::TcpConnectionPtr &conn, 
@@ -102,6 +118,32 @@ void UserController::logout(const muduo::net::TcpConnectionPtr &conn,
 
 }
 
+void UserController::oneChat(const muduo::net::TcpConnectionPtr &conn, 
+                        json &js, muduo::Timestamp timestamp) {
+    json response;
+    int to_id;
+    try {
+        to_id = js["toid"].get<int>();
+    } catch(...) {
+        // FIX_JSON_PACKAGE()
+    }
+    
+    {
+        std::lock_guard<std::mutex> lock(connMutex_);
+        auto it = userConnMap_.find(to_id);
+        if (it != userConnMap_.end()) {
+            // transmit from user to other user
+            it->second->send(js.dump());
+            return;
+        }
+    }
+
+    // TODO other server?
+
+    msgService_.store(to_id, js.dump());
+}
+
+
 void UserController::clientCloseException(const muduo::net::TcpConnectionPtr &conn) {
     int id = -1;
     {
@@ -125,3 +167,4 @@ void UserController::clientCloseException(const muduo::net::TcpConnectionPtr &co
 void UserController::serverReset() {
     userService_.resetState();
 }
+
