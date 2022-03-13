@@ -29,6 +29,11 @@ HandlerMapping::HandlerMapping() {
         ONE_CHAT_MSG, std::bind(&UserController::oneChat, &UserController::get_instance(), std::placeholders::_1, 
                                 std::placeholders::_2, std::placeholders::_3)
     });
+
+    controllerMap_.insert({
+        ADD_FRIEND_MSG, std::bind(&UserController::addFriend, &UserController::get_instance(), std::placeholders::_1, 
+                                std::placeholders::_2, std::placeholders::_3)
+    });
 }
 
 

@@ -11,6 +11,7 @@
 #include "common/Singleton.h"
 #include "service/UserService.h"
 #include "service/MsgService.h"
+#include "service/FriendService.h"
 
 class UserController : public Singleton<UserController> {
 public:
@@ -27,6 +28,9 @@ public:
     void oneChat(const muduo::net::TcpConnectionPtr &conn, 
                             json &js, muduo::Timestamp timestamp);
 
+    void addFriend(const muduo::net::TcpConnectionPtr &conn, 
+                            json &js, muduo::Timestamp timestamp);
+
     // Exception Process
     void clientCloseException(const muduo::net::TcpConnectionPtr &conn);
 
@@ -37,9 +41,11 @@ protected:
 
 private:
     inline int loadOfflineMsg(int id, std::vector<std::string>& ans);
+    inline int loadFriend(int id, std::vector<User>& ans);
 
     UserService userService_;
     MsgService  msgService_;
+    FriendService friendService_;
 
     std::unordered_map<int, muduo::net::TcpConnectionPtr> userConnMap_;
     std::mutex connMutex_;

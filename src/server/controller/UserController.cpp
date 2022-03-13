@@ -74,6 +74,20 @@ void UserController::login(const muduo::net::TcpConnectionPtr &conn,
         response["offlinemsg"] = offlineMsgs;
     }
 
+    // load friends
+    std::vector<User> firendsVec;
+    loadFriend(id, firendsVec);
+    if (!firendsVec.empty()) {
+        std::vector<std::string> str_vec;
+        for (User &user : firendsVec) {
+            json user_js;
+            user_js["id"] = user.getId();
+            user_js["name"] = user.getName();
+            user_js["state"] = user.getState();
+            str_vec.push_back(user_js.dump());
+        }
+        response["friends"] = str_vec;
+    }
 
     conn->send(response.dump());
 
@@ -84,6 +98,12 @@ int UserController::loadOfflineMsg(int id, std::vector<std::string>& ans) {
     ans = msgService_.query_and_remove(id);
     return 0;
 }
+
+int UserController::loadFriend(int id, std::vector<User>& ans) {
+    ans = friendService_.getFriends(id);
+    return 0;
+}
+
 
 void UserController::logout(const muduo::net::TcpConnectionPtr &conn, 
                         json &js, muduo::Timestamp timestamp) {
@@ -126,6 +146,7 @@ void UserController::oneChat(const muduo::net::TcpConnectionPtr &conn,
         to_id = js["toid"].get<int>();
     } catch(...) {
         // FIX_JSON_PACKAGE()
+        return;
     }
     
     {
@@ -142,6 +163,25 @@ void UserController::oneChat(const muduo::net::TcpConnectionPtr &conn,
 
     msgService_.store(to_id, js.dump());
 }
+
+void UserController::addFriend(const muduo::net::TcpConnectionPtr &conn, 
+                        json &js, muduo::Timestamp timestamp) {
+    json responce;
+    int userid, friendid;
+    try
+    {
+        userid = js["id"].get<int>();
+        friendid = js["friendid"].get<int>();
+    }
+    catch(...)
+    {
+        // responce
+        return;
+    }
+    
+    friendService_.addFriend(userid, friendid);
+}
+
 
 
 void UserController::clientCloseException(const muduo::net::TcpConnectionPtr &conn) {
