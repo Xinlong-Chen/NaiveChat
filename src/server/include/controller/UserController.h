@@ -38,6 +38,9 @@ public:
 
     void addGroup(const muduo::net::TcpConnectionPtr &conn, 
                             json &js, muduo::Timestamp timestamp);
+                            
+    void groupChat(const muduo::net::TcpConnectionPtr &conn, 
+                            json &js, muduo::Timestamp timestamp);
     
     // Exception Process
     void clientCloseException(const muduo::net::TcpConnectionPtr &conn);

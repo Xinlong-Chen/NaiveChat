@@ -14,10 +14,10 @@ int GroupService::addGroup(int uid, int groupid) {
     return 0;
 }
 
-int GroupService::load_groups(int uid) {
-    return 0;
+std::vector<Group> GroupService::load_groups(int uid) {
+    return groupDAO.queryGroups(uid);
 }
 
-std::vector<User> GroupService::load_users(int uid, int groupid) {
-    return {};
+std::vector<int> GroupService::load_users(int uid, int groupid) {
+    return groupDAO.queryGroupUsers(uid, groupid);
 }

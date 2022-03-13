@@ -44,6 +44,11 @@ HandlerMapping::HandlerMapping() {
         ADD_GROUP_MSG, std::bind(&UserController::addGroup, &UserController::get_instance(), std::placeholders::_1, 
                                 std::placeholders::_2, std::placeholders::_3)
     });
+
+    controllerMap_.insert({
+        GROUP_CHAT_MSG, std::bind(&UserController::groupChat, &UserController::get_instance(), std::placeholders::_1, 
+                                std::placeholders::_2, std::placeholders::_3)
+    });
 }
 
 

@@ -88,6 +88,33 @@ void UserController::login(const muduo::net::TcpConnectionPtr &conn,
         }
         response["friends"] = str_vec;
     }
+    
+    // load group msg
+    std::vector<Group> groupUserVec = groupService_.load_groups(id);
+    if (!groupUserVec.empty()) {
+        std::vector<std::string> group2strVec;
+        // group:[{groupid:[xxx, xxx, xxx, xxx]}]
+        for (Group &group : groupUserVec)
+        {
+            json grpjson;
+            grpjson["id"] = group.getId();
+            grpjson["groupname"] = group.getName();
+            grpjson["groupdesc"] = group.getDesc();
+            std::vector<std::string> userV;
+            for (GroupUser &user : group.getUsers())
+            {
+                json js;
+                js["id"] = user.getId();
+                js["name"] = user.getName();
+                js["state"] = user.getState();
+                js["role"] = user.getRole();
+                userV.push_back(js.dump());
+            }
+            grpjson["users"] = userV;
+            group2strVec.push_back(grpjson.dump());
+        }
+        response["groups"] = group2strVec;
+    }
 
     conn->send(response.dump());
 
@@ -214,6 +241,33 @@ void UserController::addGroup(const muduo::net::TcpConnectionPtr &conn,
     groupService_.addGroup(userid, groupid);
 }
 
+void UserController::groupChat(const muduo::net::TcpConnectionPtr &conn, 
+                        json &js, muduo::Timestamp timestamp) {
+    int userid, groupid;
+    try {   
+        userid = js["id"].get<int>();
+        groupid = js["groupid"].get<int>();
+    } catch(...) {
+        return;
+    }
+    
+    std::vector<int> userIdVec = groupService_.load_users(userid, groupid);
+
+    std::lock_guard<std::mutex> lock(connMutex_);
+
+    for (int id : userIdVec) {
+        if (id == userid) {
+            continue;
+        }
+        auto it = userConnMap_.find(id);
+        if (it != userConnMap_.end()) {
+            it->second->send(js.dump());
+        } else {
+            // this server not found
+            msgService_.store(id, js.dump());
+        }
+    }
+}
 
 
 void UserController::clientCloseException(const muduo::net::TcpConnectionPtr &conn) {
