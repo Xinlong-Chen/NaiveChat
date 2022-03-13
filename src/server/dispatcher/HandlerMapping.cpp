@@ -34,6 +34,16 @@ HandlerMapping::HandlerMapping() {
         ADD_FRIEND_MSG, std::bind(&UserController::addFriend, &UserController::get_instance(), std::placeholders::_1, 
                                 std::placeholders::_2, std::placeholders::_3)
     });
+
+    controllerMap_.insert({
+        CREATE_GROUP_MSG, std::bind(&UserController::createGroup, &UserController::get_instance(), std::placeholders::_1, 
+                                std::placeholders::_2, std::placeholders::_3)
+    });
+
+    controllerMap_.insert({
+        ADD_GROUP_MSG, std::bind(&UserController::addGroup, &UserController::get_instance(), std::placeholders::_1, 
+                                std::placeholders::_2, std::placeholders::_3)
+    });
 }
 
 

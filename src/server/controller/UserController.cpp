@@ -182,6 +182,38 @@ void UserController::addFriend(const muduo::net::TcpConnectionPtr &conn,
     friendService_.addFriend(userid, friendid);
 }
 
+void UserController::createGroup(const muduo::net::TcpConnectionPtr &conn, 
+                        json &js, muduo::Timestamp timestamp) {
+    int userid;
+    std::string name, desc;
+    try {
+        userid = js["id"].get<int>();
+        name = js["groupname"];
+        desc = js["groupdesc"];
+    } catch (...) {
+        // response
+        return;
+    }
+
+    Group group(-1, name, desc);
+    groupService_.createGroup(userid, group);
+    // response
+}
+
+void UserController::addGroup(const muduo::net::TcpConnectionPtr &conn, 
+                        json &js, muduo::Timestamp timestamp) {
+    int userid, groupid;
+    try {
+        userid = js["id"].get<int>();
+        groupid = js["groupid"].get<int>();
+    } catch (...) {
+        // response
+        return;
+    }
+
+    groupService_.addGroup(userid, groupid);
+}
+
 
 
 void UserController::clientCloseException(const muduo::net::TcpConnectionPtr &conn) {

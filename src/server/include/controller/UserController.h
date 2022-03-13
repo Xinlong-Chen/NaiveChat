@@ -12,6 +12,7 @@
 #include "service/UserService.h"
 #include "service/MsgService.h"
 #include "service/FriendService.h"
+#include "service/GroupService.h"
 
 class UserController : public Singleton<UserController> {
 public:
@@ -31,6 +32,13 @@ public:
     void addFriend(const muduo::net::TcpConnectionPtr &conn, 
                             json &js, muduo::Timestamp timestamp);
 
+    // group operator
+    void createGroup(const muduo::net::TcpConnectionPtr &conn, 
+                            json &js, muduo::Timestamp timestamp);
+
+    void addGroup(const muduo::net::TcpConnectionPtr &conn, 
+                            json &js, muduo::Timestamp timestamp);
+    
     // Exception Process
     void clientCloseException(const muduo::net::TcpConnectionPtr &conn);
 
@@ -46,6 +54,7 @@ private:
     UserService userService_;
     MsgService  msgService_;
     FriendService friendService_;
+    GroupService groupService_;
 
     std::unordered_map<int, muduo::net::TcpConnectionPtr> userConnMap_;
     std::mutex connMutex_;
