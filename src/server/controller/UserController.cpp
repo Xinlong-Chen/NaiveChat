@@ -51,10 +51,10 @@ void UserController::login(const muduo::net::TcpConnectionPtr &conn,
         return;
     }
     //TODO password need md5
-    int ret = userService_.login(id, pwd);
+    auto ret = userService_.login(id, pwd);
     // login fail
-    if (ret < 0) {
-        FIX_JSON_PACKAGE(response, LOGIN_MSG_ACK, std::abs(ret));
+    if (ret.first < 0) {
+        FIX_JSON_PACKAGE(response, LOGIN_MSG_ACK, std::abs(ret.first));
         conn->send(response.dump());
         return;
     }
@@ -65,6 +65,9 @@ void UserController::login(const muduo::net::TcpConnectionPtr &conn,
         userConnMap_.insert({id, conn});
     }
     FIX_JSON_PACKAGE(response, LOGIN_MSG_ACK, 0);
+
+    response["id"] = ret.second.getId();
+    response["name"] = ret.second.getName();
 
     // load offline msgs
     std::vector<std::string> offlineMsgs;

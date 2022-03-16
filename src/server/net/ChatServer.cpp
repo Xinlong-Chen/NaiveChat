@@ -52,7 +52,7 @@ void ChatServer::onMessage(const muduo::net::TcpConnectionPtr & conn,
                            muduo::Timestamp timestamp) {
     // TODO Add some application layer protocol
     std::string buf = buffer->retrieveAllAsString();
-    // std::cout << buf << std::endl;
+
     json request, response;
     try {
         request = json::parse(buf);
