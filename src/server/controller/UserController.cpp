@@ -4,6 +4,16 @@
 
 #include "public.h"
 
+UserController::UserController() {
+    if (redis_connector_.connect()){
+        // 设置上报消息的回调
+        redis_connector_.init_notify_handler(std::bind(&UserController::handleRedisSubscribeMessage, 
+                                            this, std::placeholders::_1, std::placeholders::_2));
+    } else {
+        LOG_FATAL << "redis error";
+    }
+}
+
 void UserController::registerUser(const muduo::net::TcpConnectionPtr &conn, 
                     json &js, muduo::Timestamp timestamp) {
     json response;
@@ -64,6 +74,9 @@ void UserController::login(const muduo::net::TcpConnectionPtr &conn,
         std::lock_guard<std::mutex> lock(connMutex_);
         userConnMap_.insert({id, conn});
     }
+
+    redis_connector_.subscribe(id);
+
     FIX_JSON_PACKAGE(response, LOGIN_MSG_ACK, 0);
 
     response["id"] = ret.second.getId();
@@ -158,6 +171,8 @@ void UserController::logout(const muduo::net::TcpConnectionPtr &conn,
         }
     }
     
+    redis_connector_.unsubscribe(logout_id);
+
     int ret = userService_.logout(logout_id);
     if (ret == 0) {
         FIX_JSON_PACKAGE(response, LOGOUT_MSG_ACK, 0);
@@ -189,7 +204,11 @@ void UserController::oneChat(const muduo::net::TcpConnectionPtr &conn,
         }
     }
 
-    // TODO other server?
+    bool ret = userService_.isOnline(to_id);
+    if (ret) {
+        redis_connector_.publish(to_id, js.dump());
+        return;
+    }
 
     msgService_.store(to_id, js.dump());
 }
@@ -267,11 +286,17 @@ void UserController::groupChat(const muduo::net::TcpConnectionPtr &conn,
             it->second->send(js.dump());
         } else {
             // this server not found
+            // login state can query in redis
+            bool ret = userService_.isOnline(id);
+            if (ret) {
+                redis_connector_.publish(id, js.dump());
+                continue;
+            }
+
             msgService_.store(id, js.dump());
         }
     }
 }
-
 
 void UserController::clientCloseException(const muduo::net::TcpConnectionPtr &conn) {
     int id = -1;
@@ -287,6 +312,7 @@ void UserController::clientCloseException(const muduo::net::TcpConnectionPtr &co
             }
         }
     }
+    redis_connector_.unsubscribe(id);
 
     if (id != -1) {
         userService_.logout(id);
@@ -297,3 +323,16 @@ void UserController::serverReset() {
     userService_.resetState();
 }
 
+void UserController::handleRedisSubscribeMessage(int userid, std::string msg)
+{
+    std::lock_guard<std::mutex> lock(connMutex_);
+    auto it = userConnMap_.find(userid);
+    if (it != userConnMap_.end())
+    {
+        it->second->send(msg);
+        return;
+    }
+
+    // 存储该用户的离线消息
+    msgService_.store(userid, msg);
+}

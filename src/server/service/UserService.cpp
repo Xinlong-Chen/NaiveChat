@@ -10,6 +10,14 @@ int UserService::registerUser(const std::string& name, const std::string& passwo
     }
 }
 
+bool UserService::isOnline(const int id) {
+    User user = userDAO.query(id);
+    if (user.getId() == id && user.getState() == "online") {
+        return true;
+    }
+    return false;
+}
+
 std::pair<int, User> UserService::login(const int id, const std::string& password) {
     User user = userDAO.query(id);
     if (user.getId() == id && user.getPwd() == password) {

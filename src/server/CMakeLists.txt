@@ -7,10 +7,11 @@ aux_source_directory(./db DB_LIST)
 aux_source_directory(./dao DAO_LIST)
 aux_source_directory(./controller CONTROLLER_LIST)
 aux_source_directory(./service SERVICE_LIST)
+aux_source_directory(./utils UTILS_LIST)
 
 
 add_executable(ChatServer ${SRC_LIST} ${NET_LIST} ${DISPATCHER_LIST} 
                             ${DB_LIST} ${DAO_LIST} ${CONTROLLER_LIST}
-                            ${SERVICE_LIST})
+                            ${SERVICE_LIST} ${UTILS_LIST})
 
-target_link_libraries(ChatServer muduo_net muduo_base mysqlclient pthread)
+target_link_libraries(ChatServer muduo_net muduo_base mysqlclient hiredis pthread)

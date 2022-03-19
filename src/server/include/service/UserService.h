@@ -10,6 +10,7 @@ public:
     ~UserService() = default;
 
     int registerUser(const std::string& name, const std::string& password);
+    bool isOnline(const int id);
     std::pair<int, User> login(const int id, const std::string& password);
     int logout(const int id);
     int resetState();

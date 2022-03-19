@@ -13,6 +13,7 @@
 #include "service/MsgService.h"
 #include "service/FriendService.h"
 #include "service/GroupService.h"
+#include "utils/redis.h"
 
 class UserController : public Singleton<UserController> {
 public:
@@ -46,9 +47,12 @@ public:
     void clientCloseException(const muduo::net::TcpConnectionPtr &conn);
 
     void serverReset();
+
+    // redis 
+    void handleRedisSubscribeMessage(int userid, std::string msg);
              
 protected:
-    UserController() {}
+    UserController();
 
 private:
     inline int loadOfflineMsg(int id, std::vector<std::string>& ans);
@@ -61,6 +65,8 @@ private:
 
     std::unordered_map<int, muduo::net::TcpConnectionPtr> userConnMap_;
     std::mutex connMutex_;
+
+    Redis redis_connector_;
 };
 
 #endif
