@@ -15,7 +15,9 @@ public:
                   std::string dbname);
                   
     bool update(std::string sql);
+    
     MYSQL_RES* query(std::string sql);
+
     MYSQL* getConnection() {
         return con_;
     }

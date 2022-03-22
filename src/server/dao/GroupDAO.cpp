@@ -1,23 +1,18 @@
 #include "dao/GroupDAO.h"
 
-#include "db/DB.h"
+#include "utils/ConnectionPool.h"
 
 bool GroupDAO::createGroup(Group &group) {
     char sql[1024] = {0};
     sprintf(sql, "insert into allgroup(groupname, groupdesc) values('%s', '%s')",
             group.getName().c_str(), group.getDesc().c_str());
 
-    MySQL mysql;
-    if (mysql.connect())
-    {
-        if (mysql.update(sql))
-        {
-            group.setId(mysql_insert_id(mysql.getConnection()));
-            return true;
-        }
+    auto connector = ConnectionPool::get_instance().getConnection();
+    if (connector->update(sql)) {
+        group.setId(mysql_insert_id(connector->getConnection()));
+        return true;
     }
-
-    return false;
+    return  false;
 }
 
 void GroupDAO::addGroup(int userid, int groupid, std::string role) {
@@ -25,11 +20,8 @@ void GroupDAO::addGroup(int userid, int groupid, std::string role) {
     sprintf(sql, "insert into groupuser values(%d, %d, '%s')",
             groupid, userid, role.c_str());
 
-    MySQL mysql;
-    if (mysql.connect())
-    {
-        mysql.update(sql);
-    }
+    auto connector = ConnectionPool::get_instance().getConnection();
+    connector->update(sql);
 }
 
 std::vector<Group> GroupDAO::queryGroups(int userid) {
@@ -39,24 +31,21 @@ std::vector<Group> GroupDAO::queryGroups(int userid) {
             userid);
 
     std::vector<Group> groupVec;
-
-    MySQL mysql;
-    if (mysql.connect())
+    auto connector = ConnectionPool::get_instance().getConnection();
+    
+    MYSQL_RES *res = connector->query(sql);
+    if (res != nullptr)
     {
-        MYSQL_RES *res = mysql.query(sql);
-        if (res != nullptr)
+        MYSQL_ROW row;
+        while ((row = mysql_fetch_row(res)) != nullptr)
         {
-            MYSQL_ROW row;
-            while ((row = mysql_fetch_row(res)) != nullptr)
-            {
-                Group group;
-                group.setId(atoi(row[0]));
-                group.setName(row[1]);
-                group.setDesc(row[2]);
-                groupVec.push_back(group);
-            }
-            mysql_free_result(res);
+            Group group;
+            group.setId(atoi(row[0]));
+            group.setName(row[1]);
+            group.setDesc(row[2]);
+            groupVec.push_back(group);
         }
+        mysql_free_result(res);
     }
 
     for (Group &group : groupVec)
@@ -65,7 +54,7 @@ std::vector<Group> GroupDAO::queryGroups(int userid) {
             inner join groupuser b on b.userid = a.id where b.groupid=%d",
                 group.getId());
 
-        MYSQL_RES *res = mysql.query(sql);
+        MYSQL_RES *res = connector->query(sql);
         if (res != nullptr)
         {
             MYSQL_ROW row;
@@ -89,19 +78,17 @@ std::vector<int> GroupDAO::queryGroupUsers(int userid, int groupid) {
     sprintf(sql, "select userid from groupuser where groupid = %d and userid != %d", groupid, userid);
 
     std::vector<int> idVec;
-    MySQL mysql;
-    if (mysql.connect())
+
+    auto connector = ConnectionPool::get_instance().getConnection();
+    MYSQL_RES *res = connector->query(sql);
+    if (res != nullptr)
     {
-        MYSQL_RES *res = mysql.query(sql);
-        if (res != nullptr)
+        MYSQL_ROW row;
+        while ((row = mysql_fetch_row(res)) != nullptr)
         {
-            MYSQL_ROW row;
-            while ((row = mysql_fetch_row(res)) != nullptr)
-            {
-                idVec.push_back(atoi(row[0]));
-            }
-            mysql_free_result(res);
+            idVec.push_back(atoi(row[0]));
         }
+        mysql_free_result(res);
     }
     return idVec;
 }

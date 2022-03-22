@@ -18,7 +18,7 @@ extern void resetHandler(int);
 
 void initConnectionPool() {
     json config;
-    ifstream("/home/xinlong/NaiveChat/config/config.json") >> config;
+    ifstream("/home/chenxinlong/Documents/NaiveChat/config/config.json") >> config;
     ConnectionPool::get_instance().setConfig(config["MySQL"]);
     ConnectionPool::get_instance().start();
 }
